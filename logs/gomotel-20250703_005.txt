@@ -1,0 +1,12 @@
+2025-07-03 20:03:14.029 -03:00 [ERR] Error creating room for motel "5e6a264a-02ac-4c9b-a2ae-93c6636f8f0f"
+Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException: Attempted to update or delete an entity that does not exist in the store.
+   at Microsoft.EntityFrameworkCore.InMemory.Storage.Internal.InMemoryTable`1.Update(IUpdateEntry entry, IDiagnosticsLogger`1 updateLogger)
+   at Microsoft.EntityFrameworkCore.InMemory.Storage.Internal.InMemoryStore.ExecuteTransaction(IList`1 entries, IDiagnosticsLogger`1 updateLogger)
+   at Microsoft.EntityFrameworkCore.InMemory.Storage.Internal.InMemoryDatabase.SaveChangesAsync(IList`1 entries, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Gomotel.Infrastructure.Repositories.MotelRepository.UpdateAsync(Motel motel, CancellationToken cancellationToken) in E:\.NET\gomotel\Infrastructure\Repositories\MotelRepository.cs:line 76
+   at Gomotel.Controllers.RoomsController.CreateRoom(Guid motelId, CreateRoomRequest request) in E:\.NET\gomotel\Controllers\RoomsController.cs:line 109
+2025-07-03 22:33:38.056 -03:00 [INF] Starting database seeding...
+2025-07-03 22:33:38.729 -03:00 [INF] Database seeding completed successfully

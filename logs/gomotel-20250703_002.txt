@@ -1,0 +1,12 @@
+2025-07-03 19:19:36.205 -03:00 [WRN] Failed to determine the https port for redirect.
+2025-07-03 19:36:41.348 -03:00 [WRN] Failed to determine the https port for redirect.
+2025-07-03 19:41:37.481 -03:00 [ERR] Error creating room for motel "be0403fc-d2a9-4692-b8b3-bed238b17df1"
+Microsoft.EntityFrameworkCore.DbUpdateConcurrencyException: Attempted to update or delete an entity that does not exist in the store.
+   at Microsoft.EntityFrameworkCore.InMemory.Storage.Internal.InMemoryTable`1.Update(IUpdateEntry entry, IDiagnosticsLogger`1 updateLogger)
+   at Microsoft.EntityFrameworkCore.InMemory.Storage.Internal.InMemoryStore.ExecuteTransaction(IList`1 entries, IDiagnosticsLogger`1 updateLogger)
+   at Microsoft.EntityFrameworkCore.InMemory.Storage.Internal.InMemoryDatabase.SaveChangesAsync(IList`1 entries, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(IList`1 entriesToSave, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.ChangeTracking.Internal.StateManager.SaveChangesAsync(StateManager stateManager, Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Microsoft.EntityFrameworkCore.DbContext.SaveChangesAsync(Boolean acceptAllChangesOnSuccess, CancellationToken cancellationToken)
+   at Gomotel.Infrastructure.Repositories.MotelRepository.UpdateAsync(Motel motel, CancellationToken cancellationToken) in E:\.NET\gomotel\Infrastructure\Repositories\MotelRepository.cs:line 53
+   at Gomotel.Controllers.RoomsController.CreateRoom(Guid motelId, CreateRoomRequest request) in E:\.NET\gomotel\Controllers\RoomsController.cs:line 109
