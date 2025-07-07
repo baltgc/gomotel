@@ -1,0 +1,24 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.2.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "gomotel", "gomotel.csproj", "{BF37A5C1-A7AA-BA1D-62F6-0456238B24DF}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF37A5C1-A7AA-BA1D-62F6-0456238B24DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF37A5C1-A7AA-BA1D-62F6-0456238B24DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF37A5C1-A7AA-BA1D-62F6-0456238B24DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF37A5C1-A7AA-BA1D-62F6-0456238B24DF}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {F39CCF44-D778-45B1-94E3-EDF3C6141A24}
+	EndGlobalSection
+EndGlobal
