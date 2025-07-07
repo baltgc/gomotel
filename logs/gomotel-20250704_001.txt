@@ -1,7 +1,0 @@
-2025-07-04 01:29:42.410 -03:00 [INF] Database seeding is disabled
-2025-07-04 01:29:42.441 -03:00 [INF] Starting web application...
-2025-07-04 01:31:40.774 -03:00 [INF] Database seeding is disabled
-2025-07-04 01:31:40.803 -03:00 [INF] Starting web application...
-2025-07-04 01:31:40.874 -03:00 [INF] Application started successfully
-2025-07-04 01:31:40.876 -03:00 [INF] Application is listening on: http://localhost:5140
-2025-07-04 01:31:40.877 -03:00 [INF] Swagger UI available at: http://localhost:5140/swagger
