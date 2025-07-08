@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using Gomotel.Domain.Exceptions;
 using Gomotel.Infrastructure.Identity;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -44,7 +45,10 @@ public class AuthController : ControllerBase
             var existingUser = await _userManager.FindByEmailAsync(request.Email);
             if (existingUser != null)
             {
-                return BadRequest("User with this email already exists");
+                throw new BusinessRuleViolationException(
+                    "UserRegistration",
+                    "User with this email already exists"
+                );
             }
 
             // Create new user
@@ -60,7 +64,10 @@ public class AuthController : ControllerBase
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
             {
-                return BadRequest(result.Errors.Select(e => e.Description));
+                throw new BusinessRuleViolationException(
+                    "UserRegistration",
+                    string.Join(", ", result.Errors.Select(e => e.Description))
+                );
             }
 
             // Assign default role (User)
@@ -88,6 +95,10 @@ public class AuthController : ControllerBase
                 }
             );
         }
+        catch (BusinessRuleViolationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during user registration for {Email}", request.Email);
@@ -104,7 +115,7 @@ public class AuthController : ControllerBase
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return Unauthorized("Invalid email or password");
+                throw new UserNotFoundException(request.Email);
             }
 
             var result = await _signInManager.CheckPasswordSignInAsync(
@@ -119,7 +130,7 @@ public class AuthController : ControllerBase
 
             if (!user.IsActive)
             {
-                return Unauthorized("Account is deactivated");
+                throw new InvalidUserStateException(Guid.Parse(user.Id), "Inactive", "Active");
             }
 
             // Generate JWT token
@@ -141,6 +152,14 @@ public class AuthController : ControllerBase
                 }
             );
         }
+        catch (UserNotFoundException ex)
+        {
+            return Unauthorized("Invalid email or password");
+        }
+        catch (InvalidUserStateException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during login for {Email}", request.Email);
@@ -161,9 +180,14 @@ public class AuthController : ControllerBase
             }
 
             var user = await _userManager.FindByIdAsync(userId);
-            if (user == null || !user.IsActive)
+            if (user == null)
             {
-                return Unauthorized("User not found or inactive");
+                throw new UserNotFoundException(Guid.Parse(userId));
+            }
+
+            if (!user.IsActive)
+            {
+                throw new InvalidUserStateException(Guid.Parse(userId), "Inactive", "Active");
             }
 
             var token = await GenerateJwtToken(user);
@@ -184,6 +208,14 @@ public class AuthController : ControllerBase
                 }
             );
         }
+        catch (UserNotFoundException ex)
+        {
+            return Unauthorized("User not found");
+        }
+        catch (InvalidUserStateException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during token refresh");
@@ -200,14 +232,17 @@ public class AuthController : ControllerBase
             var user = await _userManager.FindByEmailAsync(request.Email);
             if (user == null)
             {
-                return NotFound("User not found");
+                throw new UserNotFoundException(request.Email);
             }
 
             // Check if role exists
             var roleExists = await _roleManager.RoleExistsAsync(request.Role);
             if (!roleExists)
             {
-                return BadRequest($"Role '{request.Role}' does not exist");
+                throw new BusinessRuleViolationException(
+                    "RoleAssignment",
+                    $"Role '{request.Role}' does not exist"
+                );
             }
 
             // Remove existing roles if replacing
@@ -221,10 +256,21 @@ public class AuthController : ControllerBase
             var result = await _userManager.AddToRoleAsync(user, request.Role);
             if (!result.Succeeded)
             {
-                return BadRequest(result.Errors.Select(e => e.Description));
+                throw new BusinessRuleViolationException(
+                    "RoleAssignment",
+                    string.Join(", ", result.Errors.Select(e => e.Description))
+                );
             }
 
             return Ok($"Role '{request.Role}' assigned to user '{request.Email}'");
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (BusinessRuleViolationException ex)
+        {
+            return BadRequest(ex.Message);
         }
         catch (Exception ex)
         {
@@ -253,7 +299,7 @@ public class AuthController : ControllerBase
             var user = await _userManager.FindByIdAsync(userId);
             if (user == null)
             {
-                return NotFound("User not found");
+                throw new UserNotFoundException(Guid.Parse(userId));
             }
 
             var roles = await _userManager.GetRolesAsync(user);
@@ -268,6 +314,10 @@ public class AuthController : ControllerBase
                     Roles = roles.ToArray(),
                 }
             );
+        }
+        catch (UserNotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
         catch (Exception ex)
         {

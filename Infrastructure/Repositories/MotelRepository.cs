@@ -18,6 +18,7 @@ public class MotelRepository : IMotelRepository
     {
         return await _context
             .Motels.Include(m => m.Rooms)
+            .ThenInclude(r => r.Reservations)
             .FirstOrDefaultAsync(m => m.Id == id, cancellationToken);
     }
 
@@ -26,6 +27,7 @@ public class MotelRepository : IMotelRepository
         return await _context
             .Motels.Where(m => m.IsActive)
             .Include(m => m.Rooms)
+            .ThenInclude(r => r.Reservations)
             .ToListAsync(cancellationToken);
     }
 
@@ -37,6 +39,7 @@ public class MotelRepository : IMotelRepository
         return await _context
             .Motels.Where(m => m.OwnerId == ownerId)
             .Include(m => m.Rooms)
+            .ThenInclude(r => r.Reservations)
             .ToListAsync(cancellationToken);
     }
 
@@ -49,37 +52,8 @@ public class MotelRepository : IMotelRepository
 
     public async Task UpdateAsync(Motel motel, CancellationToken cancellationToken = default)
     {
-        // For in-memory database, we need to handle updates carefully
-        var existingMotel = await _context
-            .Motels.Include(m => m.Rooms)
-            .FirstOrDefaultAsync(m => m.Id == motel.Id, cancellationToken);
-
-        if (existingMotel != null)
-        {
-            // Update the existing entity's properties
-            existingMotel.UpdateDetails(
-                motel.Name,
-                motel.Description,
-                motel.PhoneNumber,
-                motel.Email
-            );
-
-            // Handle new rooms
-            foreach (var room in motel.Rooms)
-            {
-                if (!existingMotel.Rooms.Any(r => r.Id == room.Id))
-                {
-                    // Add the room directly to the context
-                    _context.Rooms.Add(room);
-                }
-            }
-
-            await _context.SaveChangesAsync(cancellationToken);
-        }
-        else
-        {
-            throw new InvalidOperationException($"Motel with ID {motel.Id} not found");
-        }
+        _context.Motels.Update(motel);
+        await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task DeleteAsync(Motel motel, CancellationToken cancellationToken = default)

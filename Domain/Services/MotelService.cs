@@ -9,13 +9,20 @@ namespace Gomotel.Domain.Services;
 public class MotelService : IMotelService
 {
     private readonly IMotelRepository _motelRepository;
+    private readonly MotelDomainService _motelDomainService;
+    private readonly RoomDomainService _roomDomainService;
 
-    public MotelService(IMotelRepository motelRepository)
+    public MotelService(
+        IMotelRepository motelRepository,
+        MotelDomainService motelDomainService,
+        RoomDomainService roomDomainService
+    )
     {
         _motelRepository = motelRepository;
+        _motelDomainService = motelDomainService;
+        _roomDomainService = roomDomainService;
     }
 
-    // Motel CRUD operations
     public async Task<IEnumerable<Motel>> GetAllMotelsAsync(
         CancellationToken cancellationToken = default
     )
@@ -50,7 +57,15 @@ public class MotelService : IMotelService
         CancellationToken cancellationToken = default
     )
     {
-        var motel = Motel.Create(name, description, address, phoneNumber, email, ownerId, imageUrl);
+        var motel = _motelDomainService.CreateMotel(
+            name,
+            description,
+            address,
+            phoneNumber,
+            email,
+            ownerId,
+            imageUrl
+        );
         return await _motelRepository.AddAsync(motel, cancellationToken);
     }
 
@@ -70,11 +85,11 @@ public class MotelService : IMotelService
             throw new MotelNotFoundException(id);
         }
 
-        motel.UpdateDetails(name, description, phoneNumber, email);
+        _motelDomainService.UpdateMotelDetails(motel, name, description, phoneNumber, email);
 
         if (address != null)
         {
-            motel.UpdateAddress(address);
+            _motelDomainService.UpdateMotelAddress(motel, address);
         }
 
         await _motelRepository.UpdateAsync(motel, cancellationToken);
@@ -96,7 +111,6 @@ public class MotelService : IMotelService
         return await _motelRepository.ExistsAsync(id, cancellationToken);
     }
 
-    // Room management operations
     public async Task<Room?> GetRoomByIdAsync(
         Guid motelId,
         Guid roomId,
@@ -109,7 +123,7 @@ public class MotelService : IMotelService
             throw new MotelNotFoundException(motelId);
         }
 
-        var room = motel.Rooms.FirstOrDefault(r => r.Id == roomId);
+        var room = _motelDomainService.GetRoomById(motel, roomId);
         if (room == null)
         {
             throw new RoomNotFoundException(roomId, motelId);
@@ -130,7 +144,7 @@ public class MotelService : IMotelService
             throw new MotelNotFoundException(motelId);
         }
 
-        return availableOnly ? motel.Rooms.Where(r => r.IsAvailable) : motel.Rooms;
+        return availableOnly ? _motelDomainService.GetAvailableRooms(motel) : motel.Rooms;
     }
 
     public async Task<Room> CreateRoomAsync(
@@ -151,7 +165,7 @@ public class MotelService : IMotelService
             throw new MotelNotFoundException(motelId);
         }
 
-        var room = Room.Create(
+        var room = _roomDomainService.CreateRoom(
             motelId,
             roomNumber,
             name,
@@ -161,7 +175,8 @@ public class MotelService : IMotelService
             pricePerHour,
             imageUrl
         );
-        motel.AddRoom(room);
+
+        _motelDomainService.AddRoomToMotel(motel, room);
         await _motelRepository.UpdateAsync(motel, cancellationToken);
 
         return room;
@@ -183,13 +198,13 @@ public class MotelService : IMotelService
             throw new MotelNotFoundException(motelId);
         }
 
-        var room = motel.Rooms.FirstOrDefault(r => r.Id == roomId);
+        var room = _motelDomainService.GetRoomById(motel, roomId);
         if (room == null)
         {
             throw new RoomNotFoundException(roomId, motelId);
         }
 
-        room.UpdateDetails(name, description, capacity, pricePerHour);
+        _roomDomainService.UpdateRoomDetails(room, name, description, capacity, pricePerHour);
         await _motelRepository.UpdateAsync(motel, cancellationToken);
     }
 
@@ -206,13 +221,13 @@ public class MotelService : IMotelService
             throw new MotelNotFoundException(motelId);
         }
 
-        var room = motel.Rooms.FirstOrDefault(r => r.Id == roomId);
+        var room = _motelDomainService.GetRoomById(motel, roomId);
         if (room == null)
         {
             throw new RoomNotFoundException(roomId, motelId);
         }
 
-        room.SetAvailability(isAvailable);
+        _roomDomainService.SetRoomAvailability(room, isAvailable);
         await _motelRepository.UpdateAsync(motel, cancellationToken);
     }
 
@@ -229,22 +244,12 @@ public class MotelService : IMotelService
             throw new MotelNotFoundException(motelId);
         }
 
-        return GetAvailableRooms(motel.Rooms, timeRange, capacity);
+        return _roomDomainService.GetAvailableRooms(motel.Rooms, timeRange, capacity);
     }
 
-    // Room availability methods
     public bool IsRoomAvailableForTimeRange(Room room, TimeRange timeRange)
     {
-        if (!room.IsAvailable)
-            return false;
-
-        // Check for overlapping reservations
-        var overlappingReservations = room.Reservations.Where(r =>
-            r.Status is ReservationStatus.Confirmed or ReservationStatus.CheckedIn
-            && r.TimeRange.OverlapsWith(timeRange)
-        );
-
-        return !overlappingReservations.Any();
+        return _roomDomainService.IsRoomAvailableForTimeRange(room, timeRange);
     }
 
     public IEnumerable<Room> GetAvailableRooms(
@@ -253,20 +258,6 @@ public class MotelService : IMotelService
         int? capacity = null
     )
     {
-        var availableRooms = new List<Room>();
-
-        foreach (var room in rooms.Where(r => r.IsAvailable))
-        {
-            if (capacity.HasValue && room.Capacity < capacity.Value)
-                continue;
-
-            var isAvailable = IsRoomAvailableForTimeRange(room, timeRange);
-            if (isAvailable)
-            {
-                availableRooms.Add(room);
-            }
-        }
-
-        return availableRooms;
+        return _roomDomainService.GetAvailableRooms(rooms, timeRange, capacity);
     }
 }

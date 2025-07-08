@@ -101,10 +101,18 @@ builder.Services.AddAutoMapper(typeof(Program));
 // Repositories
 builder.Services.AddScoped<IMotelRepository, MotelRepository>();
 builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
+builder.Services.AddScoped<IRoomRepository, RoomRepository>();
+builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // Domain Services
 builder.Services.AddScoped<IMotelService, MotelService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+
+// New Domain Services (Entity Logic)
+builder.Services.AddScoped<MotelDomainService>();
+builder.Services.AddScoped<RoomDomainService>();
+builder.Services.AddScoped<ReservationDomainService>();
+builder.Services.AddScoped<PaymentDomainService>();
 
 // API Versioning
 builder.Services.AddApiVersioning(options =>

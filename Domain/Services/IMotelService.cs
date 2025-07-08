@@ -6,7 +6,6 @@ namespace Gomotel.Domain.Services;
 
 public interface IMotelService
 {
-    // Motel CRUD operations
     Task<IEnumerable<Motel>> GetAllMotelsAsync(CancellationToken cancellationToken = default);
     Task<Motel?> GetMotelByIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<IEnumerable<Motel>> GetMotelsByOwnerIdAsync(
@@ -35,7 +34,6 @@ public interface IMotelService
     Task DeleteMotelAsync(Guid id, CancellationToken cancellationToken = default);
     Task<bool> MotelExistsAsync(Guid id, CancellationToken cancellationToken = default);
 
-    // Room management operations
     Task<Room?> GetRoomByIdAsync(
         Guid motelId,
         Guid roomId,
@@ -73,7 +71,6 @@ public interface IMotelService
         CancellationToken cancellationToken = default
     );
 
-    // Room availability methods
     bool IsRoomAvailableForTimeRange(Room room, TimeRange timeRange);
     IEnumerable<Room> GetAvailableRooms(
         IEnumerable<Room> rooms,

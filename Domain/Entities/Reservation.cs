@@ -8,25 +8,27 @@ namespace Gomotel.Domain.Entities;
 
 public class Reservation : AggregateRoot
 {
-    public Guid MotelId { get; private set; }
-    public Guid RoomId { get; private set; }
-    public Guid UserId { get; private set; }
-    public TimeRange TimeRange { get; private set; } = null!;
-    public ReservationStatus Status { get; private set; }
-    public Money TotalAmount { get; private set; } = null!;
-    public Guid? PaymentId { get; private set; }
-    public string? SpecialRequests { get; private set; }
-    public DateTime? CheckInTime { get; private set; }
-    public DateTime? CheckOutTime { get; private set; }
+    public Guid MotelId { get; internal set; }
+    public Guid RoomId { get; internal set; }
+    public Guid UserId { get; internal set; }
+    public TimeRange TimeRange { get; internal set; } = null!;
+    public ReservationStatus Status { get; internal set; }
+    public Money TotalAmount { get; internal set; } = null!;
+    public Guid? PaymentId { get; internal set; }
+    public string? SpecialRequests { get; internal set; }
+    public DateTime? CheckInTime { get; internal set; }
+    public DateTime? CheckOutTime { get; internal set; }
 
     // Navigation properties
     public Motel Motel { get; private set; } = null!;
     public Room Room { get; private set; } = null!;
     public Payment? Payment { get; private set; }
 
-    private Reservation() { } // EF Core constructor
+    // Private constructor for EF Core
+    private Reservation() { }
 
-    public static Reservation Create(
+    // Internal constructor for domain services
+    internal Reservation(
         Guid motelId,
         Guid roomId,
         Guid userId,
@@ -35,65 +37,24 @@ public class Reservation : AggregateRoot
         string? specialRequests = null
     )
     {
-        if (motelId == Guid.Empty)
-            throw new ArgumentException("Motel ID cannot be empty", nameof(motelId));
-        if (roomId == Guid.Empty)
-            throw new ArgumentException("Room ID cannot be empty", nameof(roomId));
-        if (userId == Guid.Empty)
-            throw new ArgumentException("User ID cannot be empty", nameof(userId));
-        if (timeRange == null)
-            throw new ArgumentNullException(nameof(timeRange));
-        if (totalAmount == null)
-            throw new ArgumentNullException(nameof(totalAmount));
-
-        var reservation = new Reservation
-        {
-            MotelId = motelId,
-            RoomId = roomId,
-            UserId = userId,
-            TimeRange = timeRange,
-            Status = ReservationStatus.Pending,
-            TotalAmount = totalAmount,
-            SpecialRequests = specialRequests,
-        };
-
-        reservation.AddDomainEvent(
-            new ReservationCreatedEvent(reservation.Id, userId, motelId, roomId)
-        );
-
-        return reservation;
+        MotelId = motelId;
+        RoomId = roomId;
+        UserId = userId;
+        TimeRange = timeRange;
+        Status = ReservationStatus.Pending;
+        TotalAmount = totalAmount;
+        SpecialRequests = specialRequests;
     }
 
-    internal void SetConfirmed()
+    // Internal method to update UpdatedAt timestamp
+    internal void MarkAsUpdated()
     {
-        Status = ReservationStatus.Confirmed;
         SetUpdatedAt();
     }
 
-    internal void SetCheckedIn()
+    // Internal method to add domain events (accessible by domain services)
+    internal void AddEvent(IDomainEvent domainEvent)
     {
-        Status = ReservationStatus.CheckedIn;
-        CheckInTime = DateTime.UtcNow;
-        SetUpdatedAt();
-    }
-
-    internal void SetCheckedOut()
-    {
-        Status = ReservationStatus.CheckedOut;
-        CheckOutTime = DateTime.UtcNow;
-        SetUpdatedAt();
-    }
-
-    internal void SetCancelled()
-    {
-        Status = ReservationStatus.Cancelled;
-        SetUpdatedAt();
-        AddDomainEvent(new ReservationCancelledEvent(Id, UserId));
-    }
-
-    public void AssignPayment(Guid paymentId)
-    {
-        PaymentId = paymentId;
-        SetUpdatedAt();
+        AddDomainEvent(domainEvent);
     }
 }

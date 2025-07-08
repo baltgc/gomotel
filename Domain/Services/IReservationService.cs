@@ -5,7 +5,6 @@ namespace Gomotel.Domain.Services;
 
 public interface IReservationService
 {
-    // Reservation CRUD operations
     Task<Reservation?> GetReservationByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default
@@ -40,7 +39,6 @@ public interface IReservationService
         CancellationToken cancellationToken = default
     );
 
-    // Reservation validation
     Task<bool> HasOverlappingReservationAsync(
         Guid roomId,
         TimeRange timeRange,
@@ -48,7 +46,6 @@ public interface IReservationService
         CancellationToken cancellationToken = default
     );
 
-    // Reservation state management
     void ConfirmReservation(Reservation reservation);
     void CheckInReservation(Reservation reservation);
     void CheckOutReservation(Reservation reservation);

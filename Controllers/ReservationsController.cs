@@ -150,6 +150,10 @@ public class ReservationsController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+        catch (BusinessRuleViolationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating reservation");
@@ -181,10 +185,6 @@ public class ReservationsController : ControllerBase
             return NotFound(ex.Message);
         }
         catch (InvalidReservationOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
         }
@@ -220,10 +220,6 @@ public class ReservationsController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error checking in reservation {ReservationId}", id);
@@ -253,10 +249,6 @@ public class ReservationsController : ControllerBase
             return NotFound(ex.Message);
         }
         catch (InvalidReservationOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
         }
@@ -295,10 +287,6 @@ public class ReservationsController : ControllerBase
             return BadRequest(ex.Message);
         }
         catch (InvalidReservationOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
         {
             return BadRequest(ex.Message);
         }
@@ -351,6 +339,10 @@ public class ReservationsController : ControllerBase
             return BadRequest(ex.Message);
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (BusinessRuleViolationException ex)
         {
             return BadRequest(ex.Message);
         }

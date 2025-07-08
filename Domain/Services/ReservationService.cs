@@ -11,17 +11,22 @@ public class ReservationService : IReservationService
 {
     private readonly IReservationRepository _reservationRepository;
     private readonly IMotelRepository _motelRepository;
+    private readonly ReservationDomainService _reservationDomainService;
+    private readonly RoomDomainService _roomDomainService;
 
     public ReservationService(
         IReservationRepository reservationRepository,
-        IMotelRepository motelRepository
+        IMotelRepository motelRepository,
+        ReservationDomainService reservationDomainService,
+        RoomDomainService roomDomainService
     )
     {
         _reservationRepository = reservationRepository;
         _motelRepository = motelRepository;
+        _reservationDomainService = reservationDomainService;
+        _roomDomainService = roomDomainService;
     }
 
-    // Reservation CRUD operations
     public async Task<Reservation?> GetReservationByIdAsync(
         Guid id,
         CancellationToken cancellationToken = default
@@ -64,7 +69,6 @@ public class ReservationService : IReservationService
         CancellationToken cancellationToken = default
     )
     {
-        // Validate the motel and room exist
         var motel = await _motelRepository.GetByIdAsync(motelId, cancellationToken);
         if (motel == null)
         {
@@ -82,7 +86,6 @@ public class ReservationService : IReservationService
             throw new RoomUnavailableException(roomId);
         }
 
-        // Create time range and validate
         var timeRange = TimeRange.Create(startTime, endTime);
 
         // Check for overlapping reservations
@@ -98,14 +101,10 @@ public class ReservationService : IReservationService
             throw new BookingConflictException(roomId, startTime, endTime, Guid.Empty);
         }
 
-        // Calculate total amount
-        var duration = timeRange.Duration;
-        var totalAmount = Money.Create(
-            room.PricePerHour.Amount * (decimal)duration.TotalHours,
-            room.PricePerHour.Currency
-        );
+        // Calculate total amount using domain service
+        var totalAmount = _reservationDomainService.CalculateTotalAmount(room, timeRange);
 
-        var reservation = Reservation.Create(
+        var reservation = _reservationDomainService.CreateReservation(
             motelId,
             roomId,
             userId,
@@ -133,7 +132,6 @@ public class ReservationService : IReservationService
         await _reservationRepository.DeleteAsync(reservation, cancellationToken);
     }
 
-    // Reservation validation
     public async Task<bool> HasOverlappingReservationAsync(
         Guid roomId,
         TimeRange timeRange,
@@ -149,51 +147,23 @@ public class ReservationService : IReservationService
         );
     }
 
-    // Reservation state management
     public void ConfirmReservation(Reservation reservation)
     {
-        if (reservation.Status != ReservationStatus.Pending)
-            throw new InvalidReservationOperationException(
-                reservation.Id,
-                "confirm",
-                "Only pending reservations can be confirmed"
-            );
-
-        reservation.SetConfirmed();
+        _reservationDomainService.ConfirmReservation(reservation);
     }
 
     public void CheckInReservation(Reservation reservation)
     {
-        if (reservation.Status != ReservationStatus.Confirmed)
-            throw new InvalidReservationOperationException(
-                reservation.Id,
-                "check in",
-                "Only confirmed reservations can be checked in"
-            );
-
-        reservation.SetCheckedIn();
+        _reservationDomainService.CheckInReservation(reservation);
     }
 
     public void CheckOutReservation(Reservation reservation)
     {
-        if (reservation.Status != ReservationStatus.CheckedIn)
-            throw new InvalidReservationOperationException(
-                reservation.Id,
-                "check out",
-                "Only checked-in reservations can be checked out"
-            );
-
-        reservation.SetCheckedOut();
+        _reservationDomainService.CheckOutReservation(reservation);
     }
 
     public void CancelReservation(Reservation reservation)
     {
-        if (reservation.Status is ReservationStatus.CheckedOut or ReservationStatus.Cancelled)
-            throw new ReservationCancellationException(
-                reservation.Id,
-                "Cannot cancel completed or already cancelled reservations"
-            );
-
-        reservation.SetCancelled();
+        _reservationDomainService.CancelReservation(reservation);
     }
 }

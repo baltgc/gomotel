@@ -89,6 +89,10 @@ public class MotelsController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+        catch (BusinessRuleViolationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating motel");
@@ -129,6 +133,10 @@ public class MotelsController : ControllerBase
             return NotFound(ex.Message);
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (BusinessRuleViolationException ex)
         {
             return BadRequest(ex.Message);
         }

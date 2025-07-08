@@ -118,6 +118,10 @@ public class RoomsController : ControllerBase
         {
             return Conflict(ex.Message);
         }
+        catch (BusinessRuleViolationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error creating room for motel {MotelId}", motelId);
@@ -159,6 +163,10 @@ public class RoomsController : ControllerBase
             return NotFound(ex.Message);
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (BusinessRuleViolationException ex)
         {
             return BadRequest(ex.Message);
         }
@@ -244,6 +252,10 @@ public class RoomsController : ControllerBase
             return NotFound(ex.Message);
         }
         catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (BusinessRuleViolationException ex)
         {
             return BadRequest(ex.Message);
         }
