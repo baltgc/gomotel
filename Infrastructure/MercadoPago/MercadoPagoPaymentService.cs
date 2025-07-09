@@ -123,39 +123,6 @@ public class MercadoPagoPaymentService : IMercadoPagoPaymentService
     }
 
     /// <inheritdoc />
-    public async Task<MercadoPagoPaymentResponse?> GetPaymentByExternalReferenceAsync(
-        string externalReference,
-        CancellationToken cancellationToken = default
-    )
-    {
-        try
-        {
-            _logger.LogInformation(
-                "Getting MercadoPago payment by external reference: {ExternalReference}",
-                externalReference
-            );
-
-            // Note: This is a simplified implementation. In a real-world scenario,
-            // you might need to implement pagination or use a different approach
-            // to find payments by external reference.
-
-            _logger.LogWarning(
-                "GetPaymentByExternalReferenceAsync is not fully implemented in this version"
-            );
-            return null;
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(
-                ex,
-                "Error getting MercadoPago payment by external reference: {ExternalReference}",
-                externalReference
-            );
-            throw;
-        }
-    }
-
-    /// <inheritdoc />
     public async Task<MercadoPagoPaymentResponse> CancelPaymentAsync(
         long paymentId,
         CancellationToken cancellationToken = default
@@ -180,42 +147,6 @@ public class MercadoPagoPaymentService : IMercadoPagoPaymentService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error cancelling MercadoPago payment: {PaymentId}", paymentId);
-            throw;
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task<MercadoPagoRefundResponse> RefundPaymentAsync(
-        long paymentId,
-        decimal? amount = null,
-        CancellationToken cancellationToken = default
-    )
-    {
-        try
-        {
-            _logger.LogInformation(
-                "Refunding MercadoPago payment: {PaymentId}, Amount: {Amount}",
-                paymentId,
-                amount
-            );
-
-            // Note: This is a simplified implementation. The actual refund implementation
-            // would require proper setup of refund requests with the MercadoPago SDK.
-
-            _logger.LogWarning("RefundPaymentAsync is not fully implemented in this version");
-
-            return new MercadoPagoRefundResponse
-            {
-                Id = 0,
-                PaymentId = paymentId,
-                Amount = amount ?? 0,
-                Status = "pending",
-                DateCreated = DateTime.UtcNow,
-            };
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error refunding MercadoPago payment: {PaymentId}", paymentId);
             throw;
         }
     }

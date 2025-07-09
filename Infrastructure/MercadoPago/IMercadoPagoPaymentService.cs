@@ -30,17 +30,6 @@ public interface IMercadoPagoPaymentService
     );
 
     /// <summary>
-    /// Get payment by external reference
-    /// </summary>
-    /// <param name="externalReference">External reference (our internal payment ID)</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Payment response</returns>
-    Task<MercadoPagoPaymentResponse?> GetPaymentByExternalReferenceAsync(
-        string externalReference,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
     /// Cancel a payment in MercadoPago
     /// </summary>
     /// <param name="paymentId">MercadoPago payment ID</param>
@@ -48,19 +37,6 @@ public interface IMercadoPagoPaymentService
     /// <returns>Payment response</returns>
     Task<MercadoPagoPaymentResponse> CancelPaymentAsync(
         long paymentId,
-        CancellationToken cancellationToken = default
-    );
-
-    /// <summary>
-    /// Refund a payment in MercadoPago
-    /// </summary>
-    /// <param name="paymentId">MercadoPago payment ID</param>
-    /// <param name="amount">Amount to refund (null for full refund)</param>
-    /// <param name="cancellationToken">Cancellation token</param>
-    /// <returns>Refund response</returns>
-    Task<MercadoPagoRefundResponse> RefundPaymentAsync(
-        long paymentId,
-        decimal? amount = null,
         CancellationToken cancellationToken = default
     );
 }
