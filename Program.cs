@@ -107,12 +107,24 @@ builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 // Domain Services
 builder.Services.AddScoped<IMotelService, MotelService>();
 builder.Services.AddScoped<IReservationService, ReservationService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 // New Domain Services (Entity Logic)
 builder.Services.AddScoped<MotelDomainService>();
 builder.Services.AddScoped<RoomDomainService>();
 builder.Services.AddScoped<ReservationDomainService>();
 builder.Services.AddScoped<PaymentDomainService>();
+
+// MercadoPago Services
+builder.Services.Configure<Gomotel.Infrastructure.MercadoPago.MercadoPagoSettings>(
+    builder.Configuration.GetSection(
+        Gomotel.Infrastructure.MercadoPago.MercadoPagoSettings.SectionName
+    )
+);
+builder.Services.AddScoped<
+    Gomotel.Infrastructure.MercadoPago.IMercadoPagoPaymentService,
+    Gomotel.Infrastructure.MercadoPago.MercadoPagoPaymentService
+>();
 
 // API Versioning
 builder.Services.AddApiVersioning(options =>

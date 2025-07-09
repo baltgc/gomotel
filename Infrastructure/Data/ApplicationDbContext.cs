@@ -1,5 +1,4 @@
 using Gomotel.Domain.Entities;
-using Gomotel.Domain.ValueObjects;
 using Gomotel.Infrastructure.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;

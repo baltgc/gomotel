@@ -14,16 +14,19 @@ public class ReservationsController : ControllerBase
 {
     private readonly IReservationService _reservationService;
     private readonly IMotelService _motelService;
+    private readonly IPaymentService _paymentService;
     private readonly ILogger<ReservationsController> _logger;
 
     public ReservationsController(
         IReservationService reservationService,
         IMotelService motelService,
+        IPaymentService paymentService,
         ILogger<ReservationsController> logger
     )
     {
         _reservationService = reservationService;
         _motelService = motelService;
+        _paymentService = paymentService;
         _logger = logger;
     }
 
@@ -297,6 +300,59 @@ public class ReservationsController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Create and process payment for a reservation through MercadoPago
+    /// </summary>
+    [HttpPost("{id}/pay")]
+    [Authorize]
+    public async Task<ActionResult<PaymentDto>> PayForReservation(
+        Guid id,
+        [FromBody] CreatePaymentForReservationRequest request
+    )
+    {
+        try
+        {
+            // TODO: Add authorization check - Users can only pay for their own reservations
+
+            // Create payment
+            var payment = await _paymentService.CreatePaymentForReservationAsync(
+                id,
+                request.PaymentMethod
+            );
+
+            // Process payment through MercadoPago
+            var processedPayment = await _paymentService.ProcessPaymentAsync(payment.Id);
+
+            return CreatedAtAction(
+                "GetPayment",
+                "Payments",
+                new { id = processedPayment.Id },
+                MapPaymentToDto(processedPayment)
+            );
+        }
+        catch (ReservationNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+        catch (BusinessRuleViolationException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Error creating and processing payment for reservation {ReservationId}",
+                id
+            );
+            return StatusCode(500, "Internal server error");
+        }
+    }
+
     [HttpGet("availability")]
     [AllowAnonymous]
     public async Task<ActionResult<IEnumerable<RoomAvailabilityInfo>>> CheckAvailability(
@@ -352,6 +408,24 @@ public class ReservationsController : ControllerBase
             return StatusCode(500, "Internal server error");
         }
     }
+
+    private static PaymentDto MapPaymentToDto(Payment payment)
+    {
+        return new PaymentDto
+        {
+            Id = payment.Id,
+            ReservationId = payment.ReservationId,
+            Amount = payment.Amount.Amount,
+            Currency = payment.Amount.Currency,
+            Status = payment.Status,
+            PaymentMethod = payment.PaymentMethod,
+            TransactionId = payment.TransactionId,
+            FailureReason = payment.FailureReason,
+            ProcessedAt = payment.ProcessedAt,
+            CreatedAt = payment.CreatedAt,
+            UpdatedAt = payment.UpdatedAt,
+        };
+    }
 }
 
 // DTOs
@@ -363,6 +437,8 @@ public record CreateReservationRequest(
     DateTime EndTime,
     string? SpecialRequests = null
 );
+
+public record CreatePaymentForReservationRequest(string PaymentMethod);
 
 public record RoomAvailabilityInfo
 {

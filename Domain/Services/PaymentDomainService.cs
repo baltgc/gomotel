@@ -1,12 +1,14 @@
 using Gomotel.Domain.Entities;
 using Gomotel.Domain.Enums;
 using Gomotel.Domain.Events;
-using Gomotel.Domain.Exceptions;
 using Gomotel.Domain.ValueObjects;
 
 namespace Gomotel.Domain.Services;
 
-public class PaymentDomainService
+/// <summary>
+/// Domain service for payment entity operations
+/// </summary>
+public class PaymentDomainService : IPaymentDomainService
 {
     public Payment CreatePayment(Guid reservationId, Money amount, string paymentMethod)
     {
@@ -51,26 +53,6 @@ public class PaymentDomainService
 
         payment.Status = PaymentStatus.Refunded;
         payment.MarkAsUpdated();
-    }
-
-    public bool CanPaymentBeProcessed(Payment payment)
-    {
-        return payment.Status == PaymentStatus.Created;
-    }
-
-    public bool CanPaymentBeApproved(Payment payment)
-    {
-        return payment.Status == PaymentStatus.Processing;
-    }
-
-    public bool CanPaymentBeFailed(Payment payment)
-    {
-        return payment.Status is not (PaymentStatus.Approved or PaymentStatus.Refunded);
-    }
-
-    public bool CanPaymentBeRefunded(Payment payment)
-    {
-        return payment.Status == PaymentStatus.Approved;
     }
 
     public bool IsPaymentSuccessful(Payment payment)

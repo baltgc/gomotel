@@ -1,5 +1,3 @@
-using Gomotel.Domain.Events;
-
 namespace Gomotel.Domain.Common;
 
 public abstract class BaseEntity
